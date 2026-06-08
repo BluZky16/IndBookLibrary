@@ -1,0 +1,64 @@
+<%- include('../partials/head', { title: 'Users' }) %>
+
+<div class="page-head mb-4">
+  <div class="kicker">Khusus Admin</div>
+  <h1 class="mb-0"><i class="bi bi-people" aria-hidden="true"></i> Kelola User</h1>
+</div>
+
+<div class="card shadow-sm">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>No</th>
+            <th>Username</th>
+            <th>Status</th>
+            <th>Dibuat Pada</th>
+            <th class="text-center">Aksi</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% users.forEach((u, i) => { %>
+            <tr>
+              <td><%= i + 1 %></td>
+              <td><%= u.username %></td>
+              <td>
+                <span class="badge <%= roleBadgeClass(u.status) %>"><%= u.status %></span>
+              </td>
+              <td><%= new Date(u.created_at).toLocaleString('id-ID') %></td>
+              <td class="text-center">
+                <% if (u.id === user.id) { %>
+                  <span class="text-muted small">(Anda)</span>
+                <% } else { %>
+                  <div class="d-flex justify-content-center align-items-center gap-2 flex-wrap">
+                    <!-- Ubah role -> form PUT via method-override (submit eksplisit, bukan otomatis) -->
+                    <form action="/dashboard/users/<%= u.id %>/role?_method=PUT" method="POST" class="d-flex align-items-center gap-1">
+                      <label class="visually-hidden" for="role<%= u.id %>">Ubah role <%= u.username %></label>
+                      <select name="status" id="role<%= u.id %>" class="form-select form-select-sm" style="width:auto">
+                        <% ALL_ROLES.forEach((role) => { %>
+                          <option value="<%= role %>" <%= u.status === role ? 'selected' : '' %>><%= role %></option>
+                        <% }) %>
+                      </select>
+                      <button type="submit" class="btn btn-primary btn-sm" aria-label="Simpan role untuk <%= u.username %>">
+                        <i class="bi bi-check-lg" aria-hidden="true"></i>
+                      </button>
+                    </form>
+
+                    <!-- Hapus user -> form DELETE via method-override -->
+                    <form action="/dashboard/users/<%= u.id %>?_method=DELETE" method="POST" class="d-inline"
+                          onsubmit="return confirm('Yakin ingin menghapus user ini?');">
+                      <button type="submit" class="btn btn-danger btn-sm"><i class="bi bi-trash" aria-hidden="true"></i> Hapus</button>
+                    </form>
+                  </div>
+                <% } %>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>

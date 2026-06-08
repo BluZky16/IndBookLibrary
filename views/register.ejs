@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register — E-Book Library</title>
+  <!-- Bootstrap 5 & Bootstrap Icons via CDN -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <!-- Font tema "Reading Room": Fraunces (serif liris) + Hanken Grotesk (body) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500;1,9..144,600&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="/css/style.css" rel="stylesheet">
+</head>
+<body class="auth-page">
+  <div class="container">
+    <div class="row justify-content-center align-items-center min-vh-100">
+      <div class="col-md-5 col-lg-4">
+
+        <!-- Kartu Register -->
+        <div class="card shadow auth-card">
+          <div class="card-body p-4">
+
+            <!-- Judul -->
+            <div class="text-center mb-4">
+              <i class="bi bi-person-plus auth-logo" aria-hidden="true"></i>
+              <div class="auth-kicker mt-3">Keanggotaan Baru</div>
+              <h1 class="mt-1 mb-0">Buat Akun Baru</h1>
+              <hr class="auth-rule">
+              <small class="text-muted">Daftar untuk mengakses E-Book Library</small>
+            </div>
+
+            <!-- Pesan flash (error/sukses) -->
+            <% if (error && error.length) { %>
+              <div class="alert alert-danger py-2"><%= error %></div>
+            <% } %>
+            <% if (success && success.length) { %>
+              <div class="alert alert-success py-2"><%= success %></div>
+            <% } %>
+
+            <!--
+              Form Register -> POST /register (fungsional: membuat akun baru).
+              Catatan: Soal UTS menyebut tombol register "tanpa aksi".
+              Jika ingin mengikuti soal secara harfiah, ganti tombol submit
+              di bawah menjadi type="button".
+            -->
+            <form action="/register" method="POST">
+              <!-- Username -->
+              <div class="mb-3">
+                <label class="form-label" for="username">Username</label>
+                <div class="input-group">
+                  <span class="input-group-text"><i class="bi bi-person" aria-hidden="true"></i></span>
+                  <input type="text" name="username" id="username" class="form-control" placeholder="Buat username" required>
+                </div>
+              </div>
+
+              <!-- Password + tombol show/hide -->
+              <div class="mb-3">
+                <label class="form-label" for="password">Password</label>
+                <div class="input-group">
+                  <span class="input-group-text"><i class="bi bi-lock" aria-hidden="true"></i></span>
+                  <input type="password" name="password" id="password" class="form-control" placeholder="Buat password" required>
+                  <button class="btn btn-outline-secondary" type="button" onclick="togglePassword()"
+                          id="togglePassword" aria-label="Tampilkan password" aria-pressed="false">
+                    <i class="bi bi-eye" id="toggleIcon" aria-hidden="true"></i>
+                  </button>
+                </div>
+              </div>
+
+              <!--
+                Tidak ada pilihan role di sini. Akun baru otomatis dibuat
+                sebagai "User". Role hanya bisa diubah oleh Admin lewat
+                halaman Kelola User.
+              -->
+              <p class="small text-muted mb-3">
+                <i class="bi bi-info-circle"></i>
+                Akun baru terdaftar sebagai <strong>User</strong>. Hubungi Admin untuk dijadikan Admin.
+              </p>
+
+              <!-- Tombol Register & Reset -->
+              <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-success">
+                  <i class="bi bi-person-check"></i> Register
+                </button>
+                <button type="reset" class="btn btn-light">Reset</button>
+              </div>
+            </form>
+
+            <!-- Link ke halaman Login -->
+            <p class="text-center mt-3 mb-0">
+              Sudah punya akun? <a href="/login">Masuk disini</a>
+            </p>
+
+            <!-- Identitas institusi (dekoratif) -->
+            <p class="auth-foot">Universitas Siber Asia · Pemrograman Web II</p>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Fungsi show/hide password (sekaligus perbarui label & state untuk screen reader)
+    function togglePassword() {
+      const input = document.getElementById('password');
+      const icon = document.getElementById('toggleIcon');
+      const btn = document.getElementById('togglePassword');
+      const show = input.type === 'password';
+      input.type = show ? 'text' : 'password';
+      icon.classList.toggle('bi-eye', !show);
+      icon.classList.toggle('bi-eye-slash', show);
+      btn.setAttribute('aria-pressed', String(show));
+      btn.setAttribute('aria-label', show ? 'Sembunyikan password' : 'Tampilkan password');
+    }
+  </script>
+</body>
+</html>

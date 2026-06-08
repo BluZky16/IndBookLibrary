@@ -1,0 +1,27 @@
+<!-- =====================================================================
+  partials/navbar.ejs
+  Navbar atas: tombol toggle sidebar (mobile), nama user, badge status,
+  dan tombol Logout.
+  ===================================================================== -->
+<nav class="navbar navbar-expand bg-white shadow-sm px-3 topbar">
+  <!-- Tombol toggle sidebar untuk layar kecil -->
+  <button class="btn btn-light d-md-none me-2" type="button" onclick="toggleSidebar()"
+          id="sidebarToggle" aria-controls="sidebar" aria-expanded="false" aria-label="Buka menu navigasi">
+    <i class="bi bi-list" aria-hidden="true"></i>
+  </button>
+
+  <span class="navbar-brand mb-0 h6 d-none d-md-block">Selamat datang kembali 👋</span>
+
+  <div class="ms-auto d-flex align-items-center gap-3">
+    <!-- Info user yang sedang login -->
+    <div class="text-end">
+      <div class="fw-semibold lh-1"><%= user.username %></div>
+      <span class="badge <%= roleBadgeClass(user.status) %>"><%= user.status %></span>
+    </div>
+
+    <!-- Tombol Logout -->
+    <a href="/logout" class="btn btn-outline-danger btn-sm">
+      <i class="bi bi-box-arrow-right"></i> Logout
+    </a>
+  </div>
+</nav>

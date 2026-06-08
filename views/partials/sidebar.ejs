@@ -1,0 +1,52 @@
+<!-- =====================================================================
+  partials/sidebar.ejs
+  Menu navigasi samping. Item aktif ditandai berdasarkan variabel "page".
+  Menu Users & Settings hanya tampil untuk Admin.
+  ===================================================================== -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-brand">
+    <i class="bi bi-book-half"></i>
+    <span>E-Book Library</span>
+  </div>
+
+  <nav aria-label="Menu utama">
+    <div class="sidebar-label">Navigasi</div>
+    <ul class="sidebar-menu">
+      <li>
+        <a href="/dashboard" class="<%= page === 'home' ? 'active' : '' %>" <%= page === 'home' ? 'aria-current="page"' : '' %>>
+          <i class="bi bi-house-door" aria-hidden="true"></i> Dashboard
+        </a>
+      </li>
+      <li>
+        <a href="/dashboard/books" class="<%= page === 'books' ? 'active' : '' %>" <%= page === 'books' ? 'aria-current="page"' : '' %>>
+          <i class="bi bi-book" aria-hidden="true"></i> Books
+        </a>
+      </li>
+
+      <!-- Menu khusus Admin -->
+      <% if (user && isAdminRole(user.status)) { %>
+        <li>
+          <a href="/dashboard/users" class="<%= page === 'users' ? 'active' : '' %>" <%= page === 'users' ? 'aria-current="page"' : '' %>>
+            <i class="bi bi-people" aria-hidden="true"></i> Users
+          </a>
+        </li>
+        <li>
+          <a href="/dashboard/settings" class="<%= page === 'settings' ? 'active' : '' %>" <%= page === 'settings' ? 'aria-current="page"' : '' %>>
+            <i class="bi bi-gear" aria-hidden="true"></i> Settings
+          </a>
+        </li>
+      <% } %>
+
+      <li>
+        <a href="/logout" class="text-danger">
+          <i class="bi bi-box-arrow-right" aria-hidden="true"></i> Logout
+        </a>
+      </li>
+    </ul>
+  </nav>
+
+  <!-- Kaki sidebar: ornamen kuningan + identitas (didorong ke bawah) -->
+  <div class="sidebar-foot">
+    Est. MMXXVI<br>Ruang Baca Digital
+  </div>
+</aside>

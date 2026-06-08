@@ -1,0 +1,733 @@
+/* =====================================================================
+   public/css/style.css
+   "The Reading Room" — tema visual untuk E-Book Library.
+
+   Konsep: sebuah ruang baca antikuariat yang didigitalkan. Kertas
+   perkamen hangat di bawah cahaya lampu meja, punggung buku berkulit
+   gelap dengan foil kuningan (gilt), tipografi editorial Fraunces yang
+   liris dipadu Hanken Grotesk yang hangat, dan gerak masuk yang tenang
+   namun terkoordinasi. Semuanya berdiri DI ATAS Bootstrap 5 — berkas ini
+   hanya menimpa variabel & komponen Bootstrap, bukan menggantinya.
+
+   Font dimuat lewat <link> Google Fonts di setiap <head> (termasuk
+   sumbu italic Fraunces untuk aksen editorial).
+   ===================================================================== */
+
+/* ---------------------------------------------------------------------
+   1. Token desain (palet, font, bayangan, radius)
+   --------------------------------------------------------------------- */
+:root {
+  /* Kertas & tinta */
+  --paper:        #f3ead9;   /* latar dasar (perkamen)            */
+  --paper-2:      #efe3cf;   /* perkamen sedikit lebih tua        */
+  --card:         #fdfaf3;   /* permukaan kartu (kertas terangkat)*/
+  --ink:          #221f18;   /* teks utama (hitam hangat)         */
+  --ink-soft:     #6b6354;   /* teks sekunder / keterangan        */
+  --hairline:     #ddcfb4;   /* garis tipis pembatas (kartu/tabel)*/
+  --field-border: #9c8a5e;   /* batas input — cukup gelap >= 3:1  */
+
+  /* Punggung buku (sidebar gelap) */
+  --spine:        #1e2a25;
+  --spine-2:      #263530;
+  --spine-text:   #cdc6b4;
+
+  /* Aksen kuningan (brass) — warna utama */
+  --brass:        #a87a2e;
+  --brass-bright: #c79a4a;
+  --brass-dark:   #846020;
+
+  /* Foil emas (gilt) — dipakai untuk garis & aksen tipis bercahaya */
+  --gilt: linear-gradient(90deg,
+            var(--brass-dark) 0%, #e6c477 45%, #fff2cf 50%,
+            #e6c477 55%, var(--brass-dark) 100%);
+
+  /* Aksen sekunder bertema buku */
+  --botanic:      #3f6b50;   /* hijau botani (success)            */
+  --ochre:        #c2882a;   /* oker (warning)                    */
+  --teal:         #4d7b78;   /* biru-hijau pudar (info)           */
+  --oxblood:      #9c3c2b;   /* merah anggur tua (danger)         */
+
+  /* Font */
+  --font-display: 'Fraunces', Georgia, 'Times New Roman', serif;
+  --font-body:    'Hanken Grotesk', system-ui, -apple-system, sans-serif;
+
+  /* Bayangan bernuansa hangat & sudut */
+  --shadow-sm: 0 1px 2px rgba(54, 41, 16, .06), 0 2px 6px rgba(54, 41, 16, .05);
+  --shadow-md: 0 6px 18px rgba(54, 41, 16, .10), 0 2px 6px rgba(54, 41, 16, .06);
+  --shadow-lg: 0 24px 60px rgba(40, 30, 12, .28);
+  --radius:    14px;
+
+  --sidebar-w: 248px;
+
+  /* ---- Menimpa variabel global Bootstrap agar warna tematik ---- */
+  --bs-primary:            var(--brass);
+  --bs-primary-rgb:        168, 122, 46;
+  --bs-primary-bg-subtle:  #f0e2c4;
+  --bs-success-rgb:        63, 107, 80;
+  --bs-success-bg-subtle:  #dde8e0;
+  --bs-warning-rgb:        194, 136, 42;
+  --bs-warning-bg-subtle:  #f3e6c8;
+  --bs-info-rgb:           77, 123, 120;
+  --bs-info-bg-subtle:     #dde9e8;
+  --bs-danger-rgb:         156, 60, 43;
+  --bs-danger-bg-subtle:   #f1dcd6;
+  --bs-body-color:         var(--ink);
+  --bs-body-font-family:   var(--font-body);
+  --bs-border-color:       var(--hairline);
+  --bs-link-color:         var(--brass-dark);
+  --bs-link-hover-color:   var(--brass);
+}
+
+/* ---------------------------------------------------------------------
+   2. Dasar tipografi & latar
+   --------------------------------------------------------------------- */
+body {
+  font-family: var(--font-body);
+  color: var(--ink);
+  background-color: var(--paper);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Lapisan butiran kertas halus di seluruh halaman (tidak menghalangi klik).
+   Sangat tipis — hanya memberi tekstur "kertas" di atas konten. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: .5;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
+  mix-blend-mode: multiply;
+}
+/* Konten halaman auth berada di atas lapisan butiran.
+   (Sengaja TIDAK menyertakan .d-flex agar shell dashboard tidak membuat
+   stacking context yang menjebak modal Bootstrap di bawah backdrop-nya.) */
+.auth-page .container, .auth-page > * { position: relative; z-index: 1; }
+
+/* Judul memakai serif liris Fraunces */
+h1, h2, h3, h4, h5, h6, .navbar-brand, .modal-title {
+  font-family: var(--font-display);
+  font-optical-sizing: auto;
+  font-weight: 600;
+  letter-spacing: -.015em;
+  color: var(--ink);
+}
+
+a { text-decoration: none; }
+a:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+/* Label form: huruf kapital kecil bergaya katalog perpustakaan */
+.form-label {
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin-bottom: .4rem;
+}
+
+/* "Kicker": label kapital kecil bercahaya kuningan di atas judul halaman.
+   Memberi rasa katalog / halaman judul buku. */
+.kicker {
+  font-size: .7rem;
+  letter-spacing: .26em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--brass-dark);
+  margin-bottom: .35rem;
+}
+.kicker::before {
+  /* ornamen titik kecil sebelum teks kicker */
+  content: "\2738";              /* ❄-like asterisk floret */
+  margin-right: .5rem;
+  color: var(--brass);
+  font-size: .85em;
+}
+
+/* Kepala halaman (judul + sub-judul) dengan garis emas tipis di bawah */
+.page-head {
+  position: relative;
+  padding-bottom: .9rem;
+  border-bottom: 1px solid var(--hairline);
+}
+.page-head::after {
+  content: "";
+  position: absolute; left: 0; bottom: -1px;
+  width: 64px; height: 2px;
+  background: var(--gilt);
+}
+.page-head .text-muted { font-family: var(--font-display); font-style: italic; }
+
+/* ---------------------------------------------------------------------
+   3. Tombol — ditema ulang lewat variabel --bs-btn-* per varian
+   --------------------------------------------------------------------- */
+.btn {
+  --bs-btn-font-family: var(--font-body);
+  font-weight: 600;
+  border-radius: 9px;
+  padding-inline: 1.05rem;
+  transition: transform .15s ease, box-shadow .15s ease, background-color .15s ease;
+}
+.btn:hover { transform: translateY(-1px); }
+.btn:active { transform: translateY(0); }
+
+/* Indikator fokus keyboard yang jelas (WCAG 2.4.7) di semua kontrol */
+.btn:focus-visible,
+a:focus-visible,
+.page-link:focus-visible,
+.form-control:focus-visible,
+.form-select:focus-visible {
+  outline: 2px solid var(--brass-dark);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 .2rem rgba(168, 122, 46, .25);
+}
+/* Pada sidebar gelap, fokus pakai kuningan terang agar kontras */
+.sidebar-menu a:focus-visible {
+  outline: 2px solid var(--brass-bright);
+  outline-offset: -2px;
+}
+
+.btn-primary {
+  /* Pakai brass gelap agar teks putih lolos kontras AA (5.7:1, bukan 3.8:1).
+     Sapuan gradien halus memberi kesan logam tertimpa cahaya. */
+  --bs-btn-bg: var(--brass-dark);       --bs-btn-border-color: var(--brass-dark);
+  --bs-btn-hover-bg: #6a4d18;           --bs-btn-hover-border-color: #6a4d18;
+  --bs-btn-active-bg: #6a4d18;
+  --bs-btn-color: #fff; --bs-btn-hover-color: #fff;
+  background-image: linear-gradient(180deg, rgba(255, 246, 222, .16), rgba(0, 0, 0, .08));
+  box-shadow: 0 4px 12px rgba(132, 96, 32, .35);
+}
+.btn-success {
+  --bs-btn-bg: var(--botanic);  --bs-btn-border-color: var(--botanic);
+  --bs-btn-hover-bg: #325840;   --bs-btn-hover-border-color: #325840;
+  --bs-btn-color: #fff; --bs-btn-hover-color: #fff;
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, .12), rgba(0, 0, 0, .08));
+}
+.btn-warning {
+  /* Teks gelap di atas oker -> 6.9:1 (teks putih hanya 3.1:1, gagal AA) */
+  --bs-btn-bg: var(--ochre);  --bs-btn-border-color: var(--ochre);
+  --bs-btn-hover-bg: #a8721f; --bs-btn-hover-border-color: #a8721f;
+  --bs-btn-color: var(--ink); --bs-btn-hover-color: var(--ink);
+}
+.btn-info {
+  --bs-btn-bg: var(--teal);   --bs-btn-border-color: var(--teal);
+  --bs-btn-hover-bg: #3f6764; --bs-btn-hover-border-color: #3f6764;
+  --bs-btn-color: #fff; --bs-btn-hover-color: #fff;
+}
+.btn-danger {
+  --bs-btn-bg: var(--oxblood); --bs-btn-border-color: var(--oxblood);
+  --bs-btn-hover-bg: #80301f;  --bs-btn-hover-border-color: #80301f;
+  --bs-btn-color: #fff; --bs-btn-hover-color: #fff;
+}
+.btn-outline-danger {
+  --bs-btn-color: var(--oxblood); --bs-btn-border-color: var(--oxblood);
+  --bs-btn-hover-bg: var(--oxblood); --bs-btn-hover-border-color: var(--oxblood);
+}
+.btn-outline-primary {
+  --bs-btn-color: var(--brass-dark); --bs-btn-border-color: var(--brass);
+  --bs-btn-hover-bg: var(--brass);   --bs-btn-hover-border-color: var(--brass);
+}
+/* Tombol "light" tampil seperti kertas dengan garis tipis */
+.btn-light {
+  --bs-btn-bg: var(--card);        --bs-btn-border-color: var(--hairline);
+  --bs-btn-hover-bg: var(--paper-2); --bs-btn-hover-border-color: var(--brass);
+  --bs-btn-color: var(--ink);
+}
+.btn-outline-secondary {
+  --bs-btn-color: var(--ink-soft); --bs-btn-border-color: var(--hairline);
+  --bs-btn-hover-bg: var(--paper-2); --bs-btn-hover-color: var(--ink);
+  --bs-btn-hover-border-color: var(--brass);
+}
+
+/* ---------------------------------------------------------------------
+   4. Kartu, tabel, form, badge
+   --------------------------------------------------------------------- */
+.card {
+  --bs-card-bg: var(--card);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+}
+.card-header {
+  background: transparent !important;
+  border-bottom: 1px solid var(--hairline);
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -.01em;
+}
+
+.table {
+  --bs-table-bg: transparent;
+  --bs-table-hover-bg: #f6edda;
+  --bs-table-color: var(--ink);
+  margin-bottom: 0;
+}
+.table > thead {
+  --bs-table-bg: transparent;
+}
+.table > thead th {
+  font-size: .72rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  font-weight: 700;
+  border-bottom: 1.5px solid var(--hairline);
+  background: #f7efdd;
+  padding-block: .85rem;
+}
+.table td { border-color: #ece0c8; vertical-align: middle; }
+.table-light, .table > :not(caption) > * > * { --bs-table-bg: transparent; }
+
+/* Baris tabel: saat di-hover muncul penanda emas tipis di tepi kiri,
+   seperti pita pembatas yang menyelip di halaman. */
+.table tbody tr {
+  transition: box-shadow .15s ease, background-color .15s ease;
+}
+.table.table-hover tbody tr:hover {
+  box-shadow: inset 3px 0 0 var(--brass);
+}
+
+/* Input & select — fokus dengan cincin kuningan */
+.form-control, .form-select {
+  border-radius: 9px;
+  border: 1px solid var(--field-border);   /* batas terlihat jelas (>= 3:1) */
+  background-color: #fffdf7;
+  color: var(--ink);
+  padding: .55rem .8rem;
+}
+.form-control::placeholder { color: #7c715a; } /* placeholder 4.7:1, bukan 2.4:1 */
+.form-control:focus, .form-select:focus {
+  border-color: var(--brass);
+  box-shadow: 0 0 0 .2rem rgba(168, 122, 46, .18);
+  background-color: #fff;
+}
+.input-group-text {
+  background: #f1e6cf;
+  border: 1px solid var(--field-border);
+  color: var(--brass-dark);
+}
+
+.badge {
+  font-weight: 600; letter-spacing: .02em; padding: .4em .7em;
+  border: 1px solid rgba(255, 246, 222, .25);  /* sisi emas tipis */
+}
+
+/* ---------------------------------------------------------------------
+   5. Halaman Login / Register — "ruang baca"
+   --------------------------------------------------------------------- */
+.auth-page {
+  min-height: 100vh;
+  background-color: var(--spine);
+  background-image:
+    radial-gradient(120% 90% at 50% -10%, rgba(199, 154, 74, .22), transparent 60%),
+    radial-gradient(80% 60% at 85% 110%, rgba(63, 107, 80, .18), transparent 60%),
+    linear-gradient(160deg, #243430 0%, #19231f 100%);
+}
+/* Sentuhan butiran lebih kuat di latar gelap auth */
+.auth-page::after {
+  content: "";
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E");
+}
+
+.auth-card {
+  position: relative;
+  border: 1px solid var(--hairline);
+  border-radius: 18px;
+  background: var(--card);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+  animation: riseIn .6s cubic-bezier(.2, .8, .2, 1) both;
+}
+/* Pita kuningan tipis di puncak kartu, seperti pembatas buku */
+.auth-card::before {
+  content: "";
+  display: block;
+  height: 5px;
+  background: var(--gilt);
+}
+/* Bingkai dalam (double-rule) ala halaman judul buku — di selokan padding,
+   tidak menimpa teks. pointer-events:none agar tak menghalangi klik. */
+.auth-card::after {
+  content: "";
+  position: absolute;
+  inset: 18px 14px 14px;
+  border: 1px solid rgba(168, 122, 46, .28);
+  border-radius: 12px;
+  pointer-events: none;
+}
+/* Konten kartu di atas bingkai dekoratif */
+.auth-card .card-body { position: relative; z-index: 1; }
+
+/* Logo medali kuningan dengan kilau lembut */
+.auth-logo {
+  position: relative;
+  font-size: 2.1rem;
+  color: var(--brass);
+  width: 68px; height: 68px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border: 1px solid var(--brass);
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 35%, #fbf3df, #f3e7cb);
+  box-shadow: inset 0 0 0 4px rgba(199, 154, 74, .12),
+              0 6px 18px rgba(40, 30, 12, .18);
+}
+/* Cincin kilau yang menyapu pelan mengelilingi medali */
+.auth-logo::after {
+  content: "";
+  position: absolute; inset: -5px;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg,
+              transparent 0deg, rgba(255, 240, 200, .85) 28deg, transparent 70deg);
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 2px));
+          mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 2px));
+  animation: gildSpin 6s linear infinite;
+  opacity: .8;
+}
+/* Judul auth memakai Fraunces besar */
+.auth-card h1 {
+  font-size: 1.65rem;
+  letter-spacing: -.02em;
+}
+/* Kicker huruf kapital kecil di atas/sekitar judul */
+.auth-kicker {
+  font-size: .68rem;
+  letter-spacing: .26em;
+  text-transform: uppercase;
+  color: var(--brass-dark);
+  font-weight: 700;
+}
+/* Garis ganda dekoratif (double rule) ala halaman buku */
+.auth-rule {
+  border: 0;
+  height: 0;
+  width: 64px;
+  margin: .85rem auto;
+  border-top: 1px solid var(--brass);
+  border-bottom: 1px solid var(--brass);
+  padding-top: 3px;
+  opacity: .8;
+}
+.auth-card a { color: var(--brass-dark); font-weight: 600; }
+.auth-card a:hover { color: var(--brass); }
+
+/* Baris kaki kartu auth: kapital kecil bercahaya, identitas institusi */
+.auth-foot {
+  margin-top: 1.1rem;
+  text-align: center;
+  font-size: .62rem;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+/* Pemunculan bertahap (stagger) untuk tiap blok di dalam kartu auth */
+.auth-card .card-body > * { animation: riseIn .5s cubic-bezier(.2, .8, .2, 1) both; }
+.auth-card .card-body > *:nth-child(1) { animation-delay: .10s; }
+.auth-card .card-body > *:nth-child(2) { animation-delay: .16s; }
+.auth-card .card-body > *:nth-child(3) { animation-delay: .22s; }
+.auth-card .card-body > *:nth-child(4) { animation-delay: .28s; }
+.auth-card .card-body > *:nth-child(5) { animation-delay: .34s; }
+.auth-card .card-body > *:nth-child(6) { animation-delay: .40s; }
+
+/* ---------------------------------------------------------------------
+   6. Layout dashboard — sidebar = punggung buku berkulit
+   --------------------------------------------------------------------- */
+.app-body {
+  min-height: 100vh;
+  background-color: var(--paper);
+  /* Atmosfer "meja baca yang disinari": sorot hangat di kiri-atas, sedikit
+     bayangan hijau di kanan-bawah. Diletakkan pada latar elemen sehingga
+     selalu berada DI BAWAH konten (tidak menjebak modal). */
+  background-image:
+    radial-gradient(75% 55% at 0% 0%, rgba(199, 154, 74, .12), transparent 55%),
+    radial-gradient(70% 60% at 100% 100%, rgba(63, 107, 80, .07), transparent 60%);
+  background-attachment: fixed;
+}
+
+.sidebar {
+  width: var(--sidebar-w);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background:
+    /* butiran kulit halus */
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='l'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23l)' opacity='0.05'/%3E%3C/svg%3E"),
+    linear-gradient(180deg, var(--spine-2) 0%, var(--spine) 62%, #18211d 100%);
+  color: var(--spine-text);
+  position: sticky;
+  top: 0;
+  flex-shrink: 0;
+  /* Tepi kanan & atas dengan garis kuningan tipis seperti foil punggung buku */
+  border-right: 1px solid rgba(0, 0, 0, .3);
+  box-shadow: inset -3px 0 0 rgba(199, 154, 74, .35),
+              inset 0 3px 0 rgba(199, 154, 74, .18);
+}
+.sidebar-brand {
+  padding: 1.4rem 1.3rem;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.15rem;
+  letter-spacing: -.01em;
+  color: #fbf3df;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, .45);   /* emboss lembut */
+  display: flex;
+  align-items: center;
+  gap: .55rem;
+  border-bottom: 1px solid rgba(199, 154, 74, .2);
+}
+.sidebar-brand .bi {
+  color: var(--brass-bright);
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, .4));
+}
+
+/* Label seksi kapital kecil di dalam sidebar (rasa katalog) */
+.sidebar-label {
+  font-size: .62rem;
+  letter-spacing: .24em;
+  text-transform: uppercase;
+  color: rgba(199, 154, 74, .8);
+  font-weight: 700;
+  padding: 0 1.45rem;
+  margin: 1.15rem 0 .35rem;
+}
+
+.sidebar-menu { list-style: none; padding: 0; margin: .2rem 0; }
+.sidebar-menu a {
+  display: flex;
+  align-items: center;
+  gap: .7rem;
+  padding: .72rem 1.3rem;
+  margin: .1rem .6rem;
+  border-radius: 8px;
+  color: var(--spine-text);
+  font-weight: 500;
+  text-decoration: none;
+  transition: background .15s ease, color .15s ease, padding-left .15s ease;
+}
+.sidebar-menu a .bi { font-size: 1.05rem; opacity: .85; }
+.sidebar-menu a:hover {
+  background: rgba(199, 154, 74, .12);
+  color: #fff;
+  padding-left: 1.5rem;
+}
+.sidebar-menu a.active {
+  background: linear-gradient(90deg, rgba(199, 154, 74, .28), rgba(199, 154, 74, .06));
+  color: #fbf3df;
+  box-shadow: inset 3px 0 0 var(--brass-bright),
+              0 0 18px rgba(199, 154, 74, .12);
+}
+.sidebar-menu a.active .bi { opacity: 1; color: var(--brass-bright); }
+.sidebar-menu a.text-danger { color: #e3a08f !important; }
+.sidebar-menu a.text-danger:hover { background: rgba(156, 60, 43, .25); color: #ffd9cf !important; }
+
+/* Pemunculan bertahap item menu saat sidebar dimuat */
+.sidebar-menu li { animation: slideInLeft .4s ease both; }
+.sidebar-menu li:nth-child(1) { animation-delay: .06s; }
+.sidebar-menu li:nth-child(2) { animation-delay: .12s; }
+.sidebar-menu li:nth-child(3) { animation-delay: .18s; }
+.sidebar-menu li:nth-child(4) { animation-delay: .24s; }
+.sidebar-menu li:nth-child(5) { animation-delay: .30s; }
+
+/* Kaki sidebar: didorong ke bawah, ornamen kuningan + identitas kecil */
+.sidebar-foot {
+  margin-top: auto;
+  padding: 1rem 1.45rem 1.3rem;
+  font-size: .6rem;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: rgba(205, 198, 180, .55);
+}
+.sidebar-foot::before {
+  content: "";
+  display: block;
+  width: 40px; height: 2px;
+  margin-bottom: .6rem;
+  background: var(--gilt);
+  opacity: .8;
+}
+
+/* Navbar atas */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(253, 250, 243, .85) !important;
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--hairline);
+  box-shadow: 0 1px 0 rgba(199, 154, 74, .25) !important;   /* garis emas tipis */
+}
+.navbar-brand {
+  color: var(--ink) !important;
+  font-size: 1.02rem;
+  font-style: italic;             /* sapaan editorial Fraunces miring */
+}
+
+/* Konten utama muncul dengan animasi halus */
+.content { animation: riseIn .5s cubic-bezier(.2, .8, .2, 1) both; }
+.content h1 { font-size: 1.7rem; }
+
+/* ---------------------------------------------------------------------
+   7. Kartu statistik dashboard
+   --------------------------------------------------------------------- */
+.stat-card {
+  position: relative;
+  border: 1px solid var(--hairline) !important;
+  border-radius: var(--radius);
+  background: var(--card);
+  overflow: hidden;
+  transition: transform .18s ease, box-shadow .18s ease;
+}
+/* Garis emas tipis di tepi atas tiap kartu statistik */
+.stat-card::before {
+  content: "";
+  position: absolute; left: 0; top: 0; right: 0; height: 3px;
+  background: var(--gilt);
+  opacity: 0;
+  transition: opacity .18s ease;
+}
+.stat-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--brass) !important;
+}
+.stat-card:hover::before { opacity: 1; }
+.stat-card .stat-icon {
+  width: 54px; height: 54px;
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.45rem;
+}
+/* Angka besar memakai Fraunces dengan warna kuningan & angka rata-lebar */
+.stat-card .fs-3 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  color: var(--brass-dark);
+  font-variant-numeric: tabular-nums;
+}
+/* Animasi muncul bertahap (stagger) pada baris kartu statistik */
+.row > [class*="col-"] .stat-card { animation: riseIn .5s cubic-bezier(.2, .8, .2, 1) both; }
+.row > [class*="col-"]:nth-child(1) .stat-card { animation-delay: .05s; }
+.row > [class*="col-"]:nth-child(2) .stat-card { animation-delay: .12s; }
+.row > [class*="col-"]:nth-child(3) .stat-card { animation-delay: .19s; }
+
+/* ---------------------------------------------------------------------
+   8. Cover buku, pagination, modal, alert
+   --------------------------------------------------------------------- */
+/* Cover dibuat menyerupai buku sungguhan: sudut kanan membulat, kilau
+   tipis di punggung kiri, dan bayangan jatuh. */
+.book-cover {
+  width: 40px; height: 56px;
+  object-fit: cover;
+  border-radius: 2px 5px 5px 2px;
+  box-shadow: inset 2px 0 0 rgba(255, 255, 255, .28),
+              inset 4px 0 5px rgba(0, 0, 0, .18),
+              0 2px 6px rgba(40, 30, 12, .3);
+  transition: transform .18s ease, box-shadow .18s ease;
+}
+.table tbody tr:hover .book-cover {
+  transform: translateY(-2px) rotate(-1.5deg);
+  box-shadow: inset 2px 0 0 rgba(255, 255, 255, .28),
+              inset 4px 0 5px rgba(0, 0, 0, .18),
+              0 6px 14px rgba(40, 30, 12, .35);
+}
+.book-cover-placeholder {
+  display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(135deg, #efe3cf, #e2d2b3);
+  color: var(--brass-dark);
+}
+
+.pagination {
+  --bs-pagination-color: var(--ink-soft);
+  --bs-pagination-bg: var(--card);
+  --bs-pagination-border-color: var(--hairline);
+  --bs-pagination-hover-color: var(--brass-dark);
+  --bs-pagination-hover-bg: var(--paper-2);
+  --bs-pagination-hover-border-color: var(--brass);
+  --bs-pagination-active-bg: var(--brass);
+  --bs-pagination-active-border-color: var(--brass-dark);
+  --bs-pagination-focus-box-shadow: 0 0 0 .2rem rgba(168, 122, 46, .18);
+}
+.page-link { border-radius: 8px !important; margin: 0 2px; font-weight: 600; }
+.page-item.active .page-link {
+  background-image: linear-gradient(180deg, rgba(255, 246, 222, .18), rgba(0, 0, 0, .06));
+  box-shadow: 0 3px 9px rgba(132, 96, 32, .3);
+  color: #fff;
+}
+
+.modal-content {
+  position: relative;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius);
+  background: var(--card);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;                  /* klip isi & pita emas mengikuti sudut membulat */
+}
+/* Pita kuningan di puncak modal — memakai teknik yang SAMA dengan kartu auth
+   (.auth-card::before): sebuah blok di dalam aliran konten yang dipotong rapi
+   oleh overflow:hidden, sehingga pita menyatu dengan sudut membulat modal —
+   bukan strip absolut yang tampak melayang di atas border. */
+.modal-content::before {
+  content: "";
+  display: block;
+  height: 5px;
+  flex-shrink: 0;
+  background: var(--gilt);
+}
+.modal-header { border-bottom: 1px solid var(--hairline); }
+/* Cover di dalam modal diberi bingkai kuningan tipis */
+.modal-body img {
+  border: 1px solid var(--hairline);
+  box-shadow: 0 4px 12px rgba(40, 30, 12, .25);
+}
+/* Animasi masuk modal: naik + sedikit membesar, lebih halus dari bawaan */
+.modal.fade .modal-dialog {
+  transform: translateY(14px) scale(.97);
+  transition: transform .25s cubic-bezier(.2, .8, .2, 1);
+}
+.modal.show .modal-dialog { transform: none; }
+
+.alert { border-radius: 10px; border: 1px solid transparent; }
+.alert-success { background: var(--bs-success-bg-subtle); border-color: #bcd2c2; color: #2c4d39; }
+.alert-danger  { background: var(--bs-danger-bg-subtle);  border-color: #e2bcb1; color: #76281a; }
+
+/* ---------------------------------------------------------------------
+   9. Animasi
+   --------------------------------------------------------------------- */
+/* riseIn berakhir di transform:none (bukan translateY(0)) supaya elemen
+   TIDAK menyisakan stacking context — penting agar modal tidak terjebak
+   di bawah backdrop-nya setelah animasi konten selesai. */
+@keyframes riseIn {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-10px); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes gildSpin {
+  to { transform: rotate(360deg); }
+}
+/* Hormati preferensi pengguna yang mengurangi gerak */
+@media (prefers-reduced-motion: reduce) {
+  *, .auth-card, .auth-logo::after, .content, .stat-card, .sidebar-menu li {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* ---------------------------------------------------------------------
+   10. Responsif: sidebar melayang di layar kecil
+   --------------------------------------------------------------------- */
+@media (max-width: 767.98px) {
+  .sidebar {
+    position: fixed;
+    left: 0; top: 0;
+    transform: translateX(-100%);
+    transition: transform .25s ease;
+    z-index: 1050;
+  }
+  .sidebar.show { transform: translateX(0); }
+}
