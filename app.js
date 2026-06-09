@@ -43,7 +43,7 @@ app.use(session({
   secret: 'ebook-library-rahasia-uts-2026', // kunci rahasia tanda tangan cookie
   resave: false,
   saveUninitialized: false,
-  cookie: { maxAge: 1000 * 60 * 60 } // sesi berlaku 1 jam
+  cookie: { maxAge: 1000 * 60 * 60 * 24 } // sesi berlaku 24 jam (1 hari)
 }));
 
 // --- Flash message ---

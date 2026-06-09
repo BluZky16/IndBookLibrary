@@ -10,8 +10,9 @@
 
 <div class="card shadow-sm">
   <div class="card-body">
-    <!-- Form tambah buku -> POST /dashboard/books -->
-    <form action="/dashboard/books" method="POST">
+    <!-- Form tambah buku -> POST /dashboard/books
+         enctype multipart/form-data diperlukan untuk upload file PDF -->
+    <form action="/dashboard/books" method="POST" enctype="multipart/form-data">
       <div class="row g-3">
         <div class="col-md-6">
           <label class="form-label" for="title">Judul <span class="text-danger">*</span></label>
@@ -38,8 +39,14 @@
           <input type="url" name="cover_url" id="cover_url" class="form-control" placeholder="https://...">
         </div>
         <div class="col-md-6">
-          <label class="form-label" for="file_url">URL File E-Book</label>
+          <label class="form-label" for="book_file">File E-Book (PDF)</label>
+          <input type="file" name="book_file" id="book_file" class="form-control" accept="application/pdf">
+          <div class="form-text">Maks. 25 MB. Buku bisa dibaca langsung di aplikasi.</div>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label" for="file_url">Atau URL File E-Book</label>
           <input type="url" name="file_url" id="file_url" class="form-control" placeholder="https://...">
+          <div class="form-text">Diabaikan jika file PDF di-upload.</div>
         </div>
       </div>
 

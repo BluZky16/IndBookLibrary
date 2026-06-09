@@ -47,6 +47,13 @@
                 <td><%= book.genre || '-' %></td>
                 <td><%= book.year || '-' %></td>
                 <td class="text-center text-nowrap">
+                  <!-- Baca buku (semua role) — hanya jika buku punya file e-book -->
+                  <% if (book.file_url) { %>
+                    <a href="/dashboard/books/read/<%= book.id %>" class="btn btn-success btn-sm"
+                       aria-label="Baca <%= book.title %>">
+                      <i class="bi bi-book-half" aria-hidden="true"></i>
+                    </a>
+                  <% } %>
                   <!-- Detail (semua role) -->
                   <button class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#detailModal<%= book.id %>"
                           aria-label="Lihat detail <%= book.title %>">
@@ -99,8 +106,9 @@
               <p class="mb-1"><strong>Deskripsi:</strong></p>
               <p class="text-muted"><%= book.description || 'Tidak ada deskripsi.' %></p>
               <% if (book.file_url) { %>
-                <a href="<%= book.file_url %>" target="_blank" class="btn btn-sm btn-outline-primary">
-                  <i class="bi bi-download"></i> Buka File
+                <!-- Baca langsung di aplikasi (halaman reader) -->
+                <a href="/dashboard/books/read/<%= book.id %>" class="btn btn-sm btn-success">
+                  <i class="bi bi-book-half" aria-hidden="true"></i> Baca Buku
                 </a>
               <% } %>
             </div>

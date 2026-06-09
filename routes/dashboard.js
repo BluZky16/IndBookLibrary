@@ -6,8 +6,22 @@
 // =====================================================================
 
 const express = require('express');
+const path = require('path');
+const fs = require('fs');
 const db = require('../config/db');
 const { isLoggedIn, isAdmin } = require('../middleware/auth');
+const { uploadBookFile } = require('../config/upload');
+
+// ---------------------------------------------------------------------
+// Helper: hapus file PDF lokal milik sebuah buku (jika ada).
+// Hanya menghapus file yang berada di /uploads/books — URL eksternal
+// (http/https) dibiarkan karena bukan milik server ini.
+// ---------------------------------------------------------------------
+const deleteLocalBookFile = (fileUrl) => {
+  if (!fileUrl || !fileUrl.startsWith('/uploads/books/')) return;
+  const filePath = path.join(__dirname, '..', 'public', fileUrl);
+  fs.unlink(filePath, () => {}); // abaikan error bila file sudah tidak ada
+};
 
 const router = express.Router();
 
@@ -84,6 +98,32 @@ router.get('/books', async (req, res) => {
 });
 
 // ---------------------------------------------------------------------
+// READ (baca buku): GET /dashboard/books/read/:id
+// Halaman pembaca e-book: menampilkan PDF buku langsung di aplikasi
+// (lewat <iframe>, memakai penampil PDF bawaan browser).
+// Terbuka untuk semua role yang sudah login.
+// ---------------------------------------------------------------------
+router.get('/books/read/:id', async (req, res) => {
+  try {
+    const [rows] = await db.query('SELECT * FROM books WHERE id = ?', [req.params.id]);
+    if (rows.length === 0) {
+      req.flash('error', 'Buku tidak ditemukan.');
+      return res.redirect('/dashboard/books');
+    }
+    const book = rows[0];
+    if (!book.file_url) {
+      req.flash('error', `Buku "${book.title}" belum memiliki file e-book.`);
+      return res.redirect('/dashboard/books');
+    }
+    res.render('dashboard/books-read', { page: 'books', book });
+  } catch (err) {
+    console.error('Error baca buku:', err);
+    req.flash('error', 'Gagal membuka buku.');
+    res.redirect('/dashboard/books');
+  }
+});
+
+// ---------------------------------------------------------------------
 // CREATE (form): GET /dashboard/books/create
 // ---------------------------------------------------------------------
 router.get('/books/create', isAdmin, (req, res) => {
@@ -93,17 +133,22 @@ router.get('/books/create', isAdmin, (req, res) => {
 // ---------------------------------------------------------------------
 // CREATE (proses): POST /dashboard/books
 // ---------------------------------------------------------------------
-router.post('/books', isAdmin, async (req, res) => {
+// uploadBookFile memproses <input type="file" name="book_file"> (PDF, maks 25 MB)
+router.post('/books', isAdmin, uploadBookFile, async (req, res) => {
   const { title, author, genre, year, description, cover_url, file_url } = req.body;
   try {
     if (!title || !author) {
       req.flash('error', 'Judul dan penulis wajib diisi.');
       return res.redirect('/dashboard/books/create');
     }
+    // Prioritas file e-book: PDF yang di-upload > URL eksternal yang diketik
+    const finalFileUrl = req.file
+      ? `/uploads/books/${req.file.filename}`
+      : (file_url || null);
     await db.query(
       `INSERT INTO books (title, author, genre, year, description, cover_url, file_url)
        VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [title, author, genre || null, year || null, description || null, cover_url || null, file_url || null]
+      [title, author, genre || null, year || null, description || null, cover_url || null, finalFileUrl]
     );
     req.flash('success', 'Buku berhasil ditambahkan.');
     res.redirect('/dashboard/books');
@@ -135,15 +180,28 @@ router.get('/books/edit/:id', isAdmin, async (req, res) => {
 // ---------------------------------------------------------------------
 // UPDATE (proses): PUT /dashboard/books/:id  (via method-override)
 // ---------------------------------------------------------------------
-router.put('/books/:id', isAdmin, async (req, res) => {
+router.put('/books/:id', isAdmin, uploadBookFile, async (req, res) => {
   const { title, author, genre, year, description, cover_url, file_url } = req.body;
   try {
+    // Ambil file_url lama untuk dibersihkan bila diganti file baru
+    const [[oldBook]] = await db.query('SELECT file_url FROM books WHERE id = ?', [req.params.id]);
+
+    // Prioritas: PDF baru yang di-upload > nilai file_url dari form (URL/lama)
+    const finalFileUrl = req.file
+      ? `/uploads/books/${req.file.filename}`
+      : (file_url || null);
+
     await db.query(
       `UPDATE books
        SET title = ?, author = ?, genre = ?, year = ?, description = ?, cover_url = ?, file_url = ?
        WHERE id = ?`,
-      [title, author, genre || null, year || null, description || null, cover_url || null, file_url || null, req.params.id]
+      [title, author, genre || null, year || null, description || null, cover_url || null, finalFileUrl, req.params.id]
     );
+
+    // Hapus PDF lama dari disk bila sudah digantikan file/URL lain
+    if (oldBook && oldBook.file_url !== finalFileUrl) {
+      deleteLocalBookFile(oldBook.file_url);
+    }
     req.flash('success', 'Buku berhasil diperbarui.');
     res.redirect('/dashboard/books');
   } catch (err) {
@@ -158,7 +216,10 @@ router.put('/books/:id', isAdmin, async (req, res) => {
 // ---------------------------------------------------------------------
 router.delete('/books/:id', isAdmin, async (req, res) => {
   try {
+    // Hapus juga file PDF lokal milik buku ini (bila ada)
+    const [[book]] = await db.query('SELECT file_url FROM books WHERE id = ?', [req.params.id]);
     await db.query('DELETE FROM books WHERE id = ?', [req.params.id]);
+    if (book) deleteLocalBookFile(book.file_url);
     req.flash('success', 'Buku berhasil dihapus.');
     res.redirect('/dashboard/books');
   } catch (err) {

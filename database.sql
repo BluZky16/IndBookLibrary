@@ -41,6 +41,8 @@ CREATE TABLE books (
   year INT,
   description TEXT,
   cover_url VARCHAR(500),
+  -- file_url: path PDF hasil upload ('/uploads/books/..') ATAU URL eksternal.
+  -- Dipakai halaman "Baca Buku" untuk menampilkan e-book langsung di aplikasi.
   file_url VARCHAR(500),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

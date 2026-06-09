@@ -9,6 +9,8 @@
 - **Autentikasi pengguna** — Login, Register, dan Logout dengan sistem session
 - **Role-based access** — dua peran: **Admin** (kelola buku & user) dan **User** (akses member biasa)
 - **Manajemen Buku (CRUD)** — tambah, lihat, edit, dan hapus koleksi buku perpustakaan
+- **Baca Buku di aplikasi** — e-book PDF bisa dibaca langsung di halaman reader, tanpa perlu mengunduh
+- **Upload e-book (PDF)** — Admin bisa mengunggah file PDF saat menambah/mengedit buku (maks. 25 MB)
 - **Manajemen User (Admin only)** — lihat daftar member dan kelola akun pengguna
 - **Tampilan responsif** — dibangun dengan Bootstrap 5
 
@@ -25,6 +27,7 @@
 | Styling | Bootstrap 5 (CDN) |
 | Auth | express-session + bcryptjs |
 | Query | mysql2 (parameterized queries) |
+| Upload | multer (file e-book PDF) |
 
 ---
 
@@ -37,14 +40,15 @@ IndBookLibrary/
 ├── database.sql            # Skema DB + data awal (seed)
 │
 ├── config/
-│   └── db.js               # Koneksi MySQL pool
+│   ├── db.js               # Koneksi MySQL pool
+│   └── upload.js           # Konfigurasi multer (upload PDF e-book)
 │
 ├── middleware/
 │   └── auth.js             # Middleware proteksi route (cek session & role)
 │
 ├── routes/
 │   ├── auth.js             # /login, /register, /logout
-│   └── dashboard.js        # /dashboard, /books, /users (CRUD)
+│   └── dashboard.js        # /dashboard, /books (CRUD + baca), /users
 │
 ├── views/
 │   ├── login.ejs
@@ -55,9 +59,11 @@ IndBookLibrary/
 │       ├── books.ejs       # Daftar buku
 │       ├── books-create.ejs
 │       ├── books-edit.ejs
+│       ├── books-read.ejs  # Halaman baca e-book (PDF reader)
 │       └── users.ejs       # Daftar user (admin only)
 │
 └── public/                 # Asset statis (CSS, gambar)
+    └── uploads/books/      # File PDF e-book hasil upload (di-gitignore)
 ```
 
 ---
@@ -130,11 +136,17 @@ Halaman utama setelah login — menampilkan ringkasan koleksi buku dan data memb
 ### 4. Manajemen Buku (`/dashboard/books`)
 CRUD lengkap untuk koleksi perpustakaan:
 - Lihat daftar buku (judul, penulis, genre, tahun terbit)
-- Tambah buku baru
-- Edit data buku
-- Hapus buku
+- Tambah buku baru — termasuk **upload file e-book PDF** (maks. 25 MB) atau mengisi URL eksternal
+- Edit data buku — termasuk mengganti/menghapus file PDF
+- Hapus buku — file PDF lokal milik buku ikut dihapus dari server
 
-### 5. Manajemen User (`/dashboard/users`) — Admin Only
+### 5. Baca Buku (`/dashboard/books/read/:id`)
+Halaman **reader** untuk membaca e-book langsung di aplikasi (semua role yang sudah login):
+- PDF ditampilkan lewat penampil bawaan browser (`<iframe>`), tanpa library tambahan
+- Tombol **Baca** muncul di tabel buku dan modal detail hanya jika buku punya file e-book
+- Tersedia tombol **Buka di Tab Baru** sebagai fallback bila sumber eksternal memblokir embed
+
+### 6. Manajemen User (`/dashboard/users`) — Admin Only
 - Lihat seluruh daftar member terdaftar
 - Kelola akun pengguna
 
@@ -147,6 +159,7 @@ CRUD lengkap untuk koleksi perpustakaan:
 users (id, username, password, status ENUM('Admin','User'), created_at)
 
 -- Tabel koleksi buku
+-- file_url: path PDF hasil upload ('/uploads/books/..') atau URL eksternal
 books (id, title, author, genre, year, description, cover_url, file_url, created_at)
 ```
 
@@ -156,8 +169,9 @@ books (id, title, author, genre, year, description, cover_url, file_url, created
 
 - Password disimpan dalam bentuk **hash bcrypt** — tidak pernah disimpan plaintext
 - Semua query SQL menggunakan **parameterized queries** (`?`) untuk mencegah SQL Injection
-- Session login berlaku selama **1 jam**
+- Session login berlaku selama **24 jam**
 - Method `PUT`/`DELETE` di-override via `method-override` karena HTML form hanya mendukung GET & POST
-- Untuk saat ini buku hanya bisa ditambahkan dan tidak bisa langsung dibaca
+- Upload e-book ditangani **multer**: hanya menerima PDF (validasi mimetype + ekstensi), maksimal 25 MB, disimpan di `public/uploads/books/` dengan nama unik; folder ini di-gitignore (kecuali `.gitkeep`)
+- PDF lama otomatis dihapus dari disk saat diganti (edit) atau saat bukunya dihapus — URL eksternal tidak disentuh
 
 ---

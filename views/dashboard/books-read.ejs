@@ -1,0 +1,46 @@
+<%- include('../partials/head', { title: 'Baca: ' + book.title }) %>
+
+<!-- =====================================================================
+     Halaman Baca Buku (reader)
+     Menampilkan file e-book (PDF) langsung di aplikasi memakai <iframe>
+     dengan penampil PDF bawaan browser. URL eksternal yang menolak
+     di-embed tetap bisa dibuka lewat tombol "Buka di Tab Baru".
+     ===================================================================== -->
+
+<div class="page-head d-flex justify-content-between align-items-end mb-4 flex-wrap gap-2">
+  <div>
+    <div class="kicker">Ruang Baca</div>
+    <h1 class="mb-0"><i class="bi bi-book-half" aria-hidden="true"></i> <%= book.title %></h1>
+    <p class="text-muted mb-0 mt-1">
+      oleh <em><%= book.author %></em>
+      <% if (book.year) { %> &middot; <%= book.year %><% } %>
+      <% if (book.genre) { %> &middot; <span class="badge bg-secondary"><%= book.genre %></span><% } %>
+    </p>
+  </div>
+  <div class="text-nowrap">
+    <a href="<%= book.file_url %>" target="_blank" rel="noopener" class="btn btn-light">
+      <i class="bi bi-box-arrow-up-right" aria-hidden="true"></i> Buka di Tab Baru
+    </a>
+    <a href="/dashboard/books" class="btn btn-light">
+      <i class="bi bi-arrow-left" aria-hidden="true"></i> Kembali
+    </a>
+  </div>
+</div>
+
+<div class="card shadow-sm">
+  <div class="card-body p-2">
+    <!-- Penampil PDF: tinggi mengikuti viewport agar nyaman dibaca -->
+    <iframe
+      src="<%= book.file_url %>"
+      title="Pembaca e-book: <%= book.title %>"
+      class="w-100 rounded"
+      style="height: calc(100vh - 220px); min-height: 480px; border: 0;">
+    </iframe>
+    <p class="text-muted small mt-2 mb-1 px-1">
+      PDF tidak tampil? Browser/situs sumber mungkin memblokir embed —
+      gunakan tombol <strong>Buka di Tab Baru</strong> di atas.
+    </p>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>

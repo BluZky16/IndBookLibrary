@@ -6,7 +6,19 @@ Newest entries go on top. Format: `## [version] — YYYY-MM-DD`, grouped by
 
 ## [Unreleased]
 
+### Added
+- **Fitur "Baca Buku" — e-book bisa dibaca langsung di aplikasi.**
+  - Route baru `GET /dashboard/books/read/:id` (semua role yang login) merender `views/dashboard/books-read.ejs`: halaman reader bertema Reading Room yang menampilkan PDF buku lewat `<iframe>` (penampil PDF bawaan browser), dengan tombol "Buka di Tab Baru" sebagai fallback bila sumber eksternal memblokir embed. Buku tanpa `file_url` di-redirect kembali dengan pesan flash.
+  - **Upload PDF** pada form tambah/edit buku via **multer** (`config/upload.js`): hanya `.pdf` (cek mimetype + ekstensi), maks 25 MB, disimpan ke `public/uploads/books/` dengan nama unik `timestamp-namafile`; error multer diubah jadi pesan flash. Form mendapat `enctype="multipart/form-data"`, input file `book_file`, dan tetap mendukung URL eksternal lewat field `file_url` (file upload diprioritaskan).
+  - Tombol **Baca** (ikon buku, hijau) di tabel buku dan tombol **Baca Buku** di modal detail (menggantikan tautan "Buka File" eksternal), hanya tampil bila buku punya `file_url`.
+  - Kebersihan file: PDF lama di `/uploads/books/` dihapus dari disk saat diganti (edit) atau saat bukunya dihapus; URL eksternal tidak disentuh. `public/uploads/books/` di-gitignore (kecuali `.gitkeep`).
+  - Field `file_url` di form edit diubah `type="url"` → `type="text"` agar path lokal `/uploads/books/...` lolos validasi browser.
+  - Dependensi baru: `multer`.
+
 ### Changed
+- **Session diperpanjang dari 1 jam menjadi 24 jam.** `cookie.maxAge` di `app.js` diubah dari `1000 * 60 * 60` menjadi `1000 * 60 * 60 * 24` sehingga pengguna tetap login selama satu hari penuh tanpa perlu login ulang.
+
+
 - **Login card is wider and shorter** — `views/login.ejs` column changed from `col-md-5 col-lg-4` to `col-md-10 col-lg-9`, and the form fields restructured into a Bootstrap `row g-3` grid: Username | Password on the first row (`col-md-6` each), Status full-width on the second row, and Login | Reset placed side-by-side on the third row (`col-md-8` / `col-md-4` with `w-100`) instead of stacked in a `d-grid`. Title block tightened from `mb-4` to `mb-3`. Net effect: card uses its new horizontal space, and total vertical height drops by one form row plus one button.
 - **Elevated the "Reading Room" theme across the whole app** (visual polish only — markup, routes, and rubric features unchanged). `public/css/style.css` rewritten to push the antiquarian-library concept: a reusable gilt (gold-foil) gradient token used on the card ribbon, page-head underline, stat-card top edge, modal header, sidebar foil and pagination; the dark sidebar now reads as an **embossed leather book-spine** (subtle leather-grain texture, gilt top + right foil edges, embossed brand, staggered menu reveal, a "NAVIGASI" section label and an `Est. MMXXVI` gilt footer); auth cards gained an inner double-rule frame, a slowly-gilding logo medallion and staggered field reveals; dashboard stat numbers are now gilt Fraunces with a hover top-rule; tables gain a gilt left-edge indicator and a lift/tilt on book covers per row; the modal opens with a gentle rise-and-scale.
 - **Editorial typography touches.** Added the Fraunces *italic* axis to the Google Fonts link (`head.ejs`, `login.ejs`, `register.ejs`) and used it for the topbar greeting and page sub-titles. New `.kicker` + `.page-head` pattern adds a small-caps gold kicker over each page title (Dashboard, Books, Tambah/Edit Buku, Kelola User) with a gilt underline; auth pages gained a `Universitas Siber Asia · Pemrograman Web II` footer line.
